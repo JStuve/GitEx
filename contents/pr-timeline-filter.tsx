@@ -1,6 +1,9 @@
 import { type ReactNode } from 'react'
-import './issue-visible.scss'
 import type { PlasmoCSConfig, PlasmoGetInlineAnchor, PlasmoGetStyle } from 'plasmo'
+import { useStorage } from '@plasmohq/storage/hook'
+import { LocalStorageToken } from '~models'
+import { PullTimelineFilterType, type PullTimelineFilter } from '~models/pull-timeline-filter.model'
+import { updateTimelineElement } from './pr-timeline-manager'
 
 export const config: PlasmoCSConfig = {
   matches: ['https://github.com/*/*/pull/*']
@@ -57,11 +60,34 @@ export const getStyle: PlasmoGetStyle = () => {
 }
 
 export default function FilterButton (): ReactNode {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [timelineFilter, setTimelineFilter, { setRenderValue, setStoreValue }] = useStorage<PullTimelineFilterType>(LocalStorageToken.GitPullTimelineFilter, v => v === undefined ? PullTimelineFilterType.ShowAll : v)
+
+  const filters: PullTimelineFilter[] = [
+    { type: PullTimelineFilterType.ShowAll, title: 'Display all PR timeline events', label: 'Show all' },
+    // { type: PullTimelineFilterType.ShowActive, title: 'Hides manually hidden timeline events', label: 'Show active' },
+    { type: PullTimelineFilterType.ShowOpenReviews, title: 'Shows only open reviews', label: 'Show open reviews' }
+  ]
+
+  const handleFilterChange = (filter: PullTimelineFilterType): void => {
+    setStoreValue(filter).then(() => {
+      setRenderValue(filter)
+      updateTimelineElement().then().catch(console.error)
+    }).catch(console.error)
+  }
+
   return (
     <div className='gitkit-button-group'>
-      <button className='gitkit-button gitkit-button--active' title='Display all PR timeline events'>Show all</button>
-      {/* <button className='gitkit-button' title='Hides manually hidden timeline events'>Show active</button> */}
-      <button className='gitkit-button' title='Shows only open reviews'>Show open reviews</button>
+      {filters.map(filter => (
+        <button
+          key={filter.type}
+          className={`gitkit-button ${timelineFilter === filter.type ? 'gitkit-button--active' : ''}`}
+          title={filter.title}
+          onClick={() => handleFilterChange(filter.type)}
+        >
+          {filter.label}
+        </button>
+      ))}
     </div>
   )
 }
