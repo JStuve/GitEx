@@ -1,16 +1,15 @@
-import { Loader2 } from 'lucide-react';
-import './Loader.scss';
-import clsx from 'clsx';
+import { Loader2 } from 'lucide-react'
+import './Loader.scss'
+import clsx from 'clsx'
+import { type ReactNode } from 'react'
 
-export interface LoaderProps {}
+function Loader (): ReactNode {
+  return (
+    <div className={clsx('loader')}>
+      <Loader2 />
+    </div>
 
-function Loader(props?: LoaderProps) {
-    return (
-        <div className={clsx('loader')}>
-            <Loader2 />
-        </div>
-        
-    )
+  )
 }
 
-export default Loader;
+export default Loader
